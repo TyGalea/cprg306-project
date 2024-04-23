@@ -30,7 +30,9 @@ export default function Page() {
     <main>
       {pageState === "home" && (
         <div>
-          <h1 className="text-4xl font-bold mb-5">Tyler's cool card game</h1>
+          <h1 className="text-4xl font-bold mb-5">
+            Tyler&apos;s cool card game
+          </h1>
           {user && (
             <p className="text-lg">
               Signed in as {user.displayName} ({user.email}).
