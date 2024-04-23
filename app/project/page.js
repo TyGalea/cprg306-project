@@ -71,12 +71,14 @@ export default function Page() {
             Rules
           </button>
           <p></p>
-          <button
-            onClick={() => handleHighScore()}
-            className="text-lg hover:underline"
-          >
-            High Scores
-          </button>
+          {user && (
+            <button
+              onClick={() => handleHighScore()}
+              className="text-lg hover:underline"
+            >
+              High Scores
+            </button>
+          )}
         </div>
       )}
       {pageState === "rules" && (
