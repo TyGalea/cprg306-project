@@ -4,13 +4,13 @@ import Card from "./card";
 import HandType from "./handType";
 import Link from "next/link";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useUserAuth } from "./../_utils/auth-context";
 
-import { getItems, addItem, deleteItem } from "../_services/score-services";
+import { addItem } from "../_services/score-services";
 
 export default function Home() {
-  const { user, gitHubSignIn, firebaseSignOut } = useUserAuth();
+  const { user } = useUserAuth();
 
   const [gameState, setGameState] = useState("Home");
   const [deck, setDeck] = useState([
@@ -85,9 +85,20 @@ export default function Home() {
   const [currentScore, setCurrentScore] = useState(0);
   const [targetScore, setTargetScore] = useState(500);
   const [handsLeft, setHandsLeft] = useState(3);
+  const [discards, setDiscards] = useState(3);
   const [discardsLeft, setDiscardsLeft] = useState(3);
   const [totalScore, setTotalScore] = useState(0);
   const [round, setRound] = useState(1);
+  const [rewardList, setRewardList] = useState([]);
+  const [doubleCard, setDoubleCard] = useState("");
+  const [removeSuit, setRemoveSuit] = useState("");
+  const [removeSuitDisplay, setRemoveSuitDisplay] = useState("");
+  const [removeRank, setRemoveRank] = useState("");
+  const [removeRankDisplay, setRemoveRankDisplay] = useState("");
+  const [doubleSuit, setDoubleSuit] = useState("");
+  const [doubleSuitDisplay, setDoubleSuitDisplay] = useState("");
+  const [doubleRank, setDoubleRank] = useState("");
+  const [doubleRankDisplay, setDoubleRankDisplay] = useState("");
 
   const newGame = () => {
     setGameState("Round Start");
@@ -97,7 +108,7 @@ export default function Home() {
   const newRound = () => {
     setGameState("Play");
     setHandsLeft(3);
-    setDiscardsLeft(3);
+    setDiscardsLeft(discards);
     setCurrentScore(0);
     drawHand([]);
   };
@@ -208,12 +219,102 @@ export default function Home() {
     setTotalScore(newTotalScore);
     if (handsLeft == 1) {
       if (newScore >= targetScore) {
-        alert("You win!");
         setRound(round + 1);
         setTargetScore(targetScore * 1.5);
-        setGameState("Round Start");
+        let newRewardList = [];
+        for (let i = 0; i < 3; i++) {
+          let newReward;
+          while (true) {
+            newReward = Math.floor(Math.random() * 7);
+            if (!newRewardList.includes(newReward)) {
+              newRewardList.push(newReward);
+              break;
+            }
+          }
+          setRewardList(newRewardList);
+          if (newReward == 0) {
+            let randomCard = Math.floor(Math.random() * deck.length);
+            setDoubleCard(deck[randomCard]);
+          }
+          if (newReward == 1) {
+            let randomRank = Math.floor(1 + Math.random() * 13);
+            if (randomRank == 1) {
+              setRemoveRank("A");
+              setRemoveRankDisplay("Ace");
+            } else if (randomRank == 10) {
+              setRemoveRank("0");
+              setRemoveRankDisplay("10");
+            } else if (randomRank == 11) {
+              setRemoveRank("J");
+              setRemoveRankDisplay("Jack");
+            } else if (randomRank == 12) {
+              setRemoveRank("Q");
+              setRemoveRankDisplay("Queen");
+            } else if (randomRank == 13) {
+              setRemoveRank("K");
+              setRemoveRankDisplay("King");
+            } else {
+              setRemoveRank(randomRank);
+              setRemoveRankDisplay(randomRank);
+            }
+          }
+          if (newReward == 2) {
+            let randomSuit = Math.floor(Math.random() * 4);
+            if (randomSuit == 0) {
+              setRemoveSuit("S");
+              setRemoveSuitDisplay("Spades");
+            } else if (randomSuit == 1) {
+              setRemoveSuit("H");
+              setRemoveSuitDisplay("Hearts");
+            } else if (randomSuit == 2) {
+              setRemoveSuit("D");
+              setRemoveSuitDisplay("Diamonds");
+            } else if (randomSuit == 3) {
+              setRemoveSuit("C");
+              setRemoveSuitDisplay("Clubs");
+            }
+          }
+          if (newReward == 3) {
+            let randomRank = Math.floor(1 + Math.random() * 13);
+            if (randomRank == 1) {
+              setDoubleRank("A");
+              setDoubleRankDisplay("Ace");
+            } else if (randomRank == 10) {
+              setDoubleRank("0");
+              setDoubleRankDisplay("10");
+            } else if (randomRank == 11) {
+              setDoubleRank("J");
+              setDoubleRankDisplay("Jack");
+            } else if (randomRank == 12) {
+              setDoubleRank("Q");
+              setDoubleRankDisplay("Queen");
+            } else if (randomRank == 13) {
+              setDoubleRank("K");
+              setDoubleRankDisplay("King");
+            } else {
+              setDoubleRank(randomRank);
+              setDoubleRankDisplay(randomRank);
+            }
+          }
+          if (newReward == 4) {
+            let randomSuit = Math.floor(Math.random() * 4);
+            if (randomSuit == 0) {
+              setDoubleSuit("S");
+              setDoubleSuitDisplay("Spades");
+            } else if (randomSuit == 1) {
+              setDoubleSuit("H");
+              setDoubleSuitDisplay("Hearts");
+            } else if (randomSuit == 2) {
+              setDoubleSuit("D");
+              setDoubleSuitDisplay("Diamonds");
+            } else if (randomSuit == 3) {
+              setDoubleSuit("C");
+              setDoubleSuitDisplay("Clubs");
+            }
+          }
+        }
+        setGameState("Reward");
       } else {
-        alert("You lose!");
         addItem(user.uid, newTotalScore);
         setGameState("Game Over");
       }
@@ -221,6 +322,61 @@ export default function Home() {
       setHandsLeft(handsLeft - 1);
     }
     removeCards();
+  };
+
+  const reward = (option) => {
+    let newDeck = [];
+    switch (option) {
+      case 0:
+        // add 2
+        newDeck = [...deck, doubleCard, doubleCard];
+        setDeck(newDeck);
+        break;
+      case 1:
+        // remove all rank
+        newDeck = deck.filter((card) => card.slice(0, 1) != removeRank);
+        setDeck(newDeck);
+        break;
+      case 2:
+        // remove all suit
+        newDeck = deck.filter((card) => card.slice(1, 2) != removeSuit);
+        setDeck(newDeck);
+        break;
+      case 3:
+        // double all rank
+        newDeck = [...deck];
+        for (let i = 0; i < deck.length; i++) {
+          if (deck[i].slice(0, 1) == doubleRank) {
+            newDeck.push(deck[i]);
+          }
+        }
+        setDeck(newDeck);
+        break;
+      case 4:
+        // double all suit
+        newDeck = [...deck];
+        for (let i = 0; i < deck.length; i++) {
+          if (deck[i].slice(1, 2) == doubleSuit) {
+            newDeck.push(deck[i]);
+          }
+        }
+        setDeck(newDeck);
+        break;
+      case 5:
+        // add 1 discard
+        setDiscards(discards + 1);
+        break;
+      case 6:
+        // add 1 handsize
+        setHandSize(handSize + 1);
+        break;
+    }
+    setRewardList([]);
+  };
+
+  const updateDeck = () => {
+    getDeckID();
+    setGameState("Round Start");
   };
 
   return (
@@ -254,15 +410,10 @@ export default function Home() {
               <p>Score: {currentScore}</p>
               <p>Total Score: {totalScore}</p>
             </div>
-            <p>Deck ID: {deckID}</p>
-            <p>Hand Size: {handSize}</p>
-            <p>Hand: {hand.join(" ")}</p>
-            <p>Selected Cards: {selectedCards.join(" ")}</p>
             {selectedCards.length == 5 && (
               <HandType hand={selectedCards} newHandType={scoring} />
             )}
             {selectedCards.length == 5 && <p>test</p>}
-            <p>Selected: {selected.join(" ")}</p>
             <div className="flex justify-between m-2">
               {hand.map((card, index) => (
                 <ul>
@@ -302,12 +453,117 @@ export default function Home() {
             </div>
           </div>
         )}
+        {gameState === "Reward" && (
+          <div className="flex justify-center m-2">
+            <p className="text-xl">Choose 1</p>
+          </div>
+        )}
+        <div className="flex justify-between m-2">
+          {gameState === "Reward" && rewardList.includes(0) && (
+            <div className="flex-col">
+              <Card
+                name={doubleCard}
+                image={`https://deckofcardsapi.com/static/img/${doubleCard}.png`}
+              />
+              <button
+                onClick={() => {
+                  reward(0);
+                }}
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Add 2 Copies of this card
+              </button>
+            </div>
+          )}
+          {gameState === "Reward" && rewardList.includes(1) && (
+            <div className="flex-col">
+              <button
+                onClick={() => {
+                  reward(1);
+                }}
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Remove all cards of the rank {removeRankDisplay}
+              </button>
+            </div>
+          )}
+          {gameState === "Reward" && rewardList.includes(2) && (
+            <div className="flex-col">
+              <button
+                onClick={() => {
+                  reward(2);
+                }}
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Remove all cards of the suit {removeSuitDisplay}
+              </button>
+            </div>
+          )}
+          {gameState === "Reward" && rewardList.includes(3) && (
+            <div className="flex-col">
+              <button
+                onClick={() => {
+                  reward(3);
+                }}
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Add a copy of all cards of the rank {doubleRankDisplay}
+              </button>
+            </div>
+          )}
+          {gameState === "Reward" && rewardList.includes(4) && (
+            <div className="flex-col">
+              <button
+                onClick={() => {
+                  reward(4);
+                }}
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Add a copy of all cards of the suit {doubleSuitDisplay}
+              </button>
+            </div>
+          )}
+          {gameState === "Reward" && rewardList.includes(5) && (
+            <button
+              onClick={() => {
+                reward(5);
+              }}
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            >
+              Add 1 discard per round
+            </button>
+          )}
+          {gameState === "Reward" && rewardList.includes(6) && (
+            <button
+              onClick={() => {
+                reward(6);
+              }}
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            >
+              Add 1 handsize
+            </button>
+          )}
+          {gameState === "Reward" && rewardList.length == 0 && (
+            <button
+              onClick={() => {
+                updateDeck();
+              }}
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            >
+              updateDeck
+            </button>
+          )}
+        </div>
         {gameState === "Game Over" && (
-          <p className="text-lg">
-            <Link className="hover:underline cursor-pointer" href="/project">
-              Back to Home
-            </Link>
-          </p>
+          <div>
+            <p className="text-lg">Game Over!</p>
+            <p className="text-lg">Total Score: {totalScore}</p>
+            <p className="text-lg">
+              <Link className="hover:underline cursor-pointer" href="/project">
+                Back to Home
+              </Link>
+            </p>
+          </div>
         )}
       </div>
     </main>

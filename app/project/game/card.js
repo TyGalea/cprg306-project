@@ -12,8 +12,6 @@ export default function Card({ name, image, onSelect, state, index }) {
         src={image}
         alt={`Card: ${name}`}
       />
-      <p>{name}</p>
-      <p>{state}</p>
     </div>
   );
 }
