@@ -416,7 +416,7 @@ export default function Home() {
             {selectedCards.length == 5 && <p>test</p>}
             <div className="flex justify-between m-2">
               {hand.map((card, index) => (
-                <ul>
+                <ul key={index}>
                   <li>
                     <Card
                       name={card}

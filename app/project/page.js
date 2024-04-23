@@ -116,7 +116,7 @@ export default function Page() {
         <div>
           <h1 className="text-4xl font-bold mb-5">High Scores</h1>
           {highScores.map((score, index) => (
-            <ul>
+            <ul key={index}>
               <li>
                 {index + 1}. {score.score}
               </li>
